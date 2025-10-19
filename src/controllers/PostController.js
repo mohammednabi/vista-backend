@@ -5,11 +5,20 @@ class PostController {
   constructor() {}
 
   async getAllPosts(req, res, next) {
+    let currentPage = req.query.page || 1;
+    let size = req.query.size || 10;
+    if (Number(currentPage) <= 0) {
+      currentPage = 1;
+    }
+
+    if (Number(size) <= 0) {
+      size = 10;
+    }
     try {
-      const data = await PostService.getAllPosts();
+      const data = await PostService.getAllPosts(currentPage, size);
       res.status(STATUS_CODES.SUCCESS).json({
         message: "Success fetching posts",
-        content: data,
+        data: data,
       });
     } catch (err) {
       //   res.status(STATUS_CODES.SERVER_ERROR).json({
@@ -19,6 +28,7 @@ class PostController {
       next(err);
     }
   }
+
   async getOnePost(req, res, next) {
     const postId = req.params.postId;
     try {

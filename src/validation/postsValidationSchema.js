@@ -5,7 +5,7 @@ const postsValidationSchema = joi.object({
   media: joi.string(),
   mediaType: joi.string(),
   privacy: joi.string().default("public"),
-  type: joi.string().default("post"),
+  type: joi.string().default("POST"),
   hidePostInfo: joi.boolean().default(false),
   totalLikes: joi.number().integer(),
   totalShares: joi.number().integer(),

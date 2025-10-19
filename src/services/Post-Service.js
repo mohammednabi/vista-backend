@@ -5,9 +5,28 @@ const postsValidationSchema = require("../validation/postsValidationSchema");
 class PostService {
   constructor() {}
 
-  async getAllPosts() {
+  async getAllPosts(page, size) {
     try {
-      return await Post.find({ $where: { type: "POST" } });
+      const totalItems = await Post.countDocuments({
+        type: "POST",
+      });
+      const allPosts = await Post.find({
+        type: "POST",
+      })
+        .skip((page - 1) * size)
+        .limit(size);
+
+      const finalData = {
+        content: allPosts,
+        pagination: {
+          page: Number(page),
+          size: Number(size),
+          totalItems,
+          totalPages: Math.ceil(totalItems / size),
+        },
+      };
+
+      return finalData;
     } catch (err) {
       throw new Error(`Error fetching posts : ${err.message}`);
     }
@@ -25,9 +44,27 @@ class PostService {
     }
   }
 
-  async getAllReels() {
+  async getAllReels(page, size) {
     try {
-      return await Post.find({ $where: { type: "REEL" } });
+      const totalItems = await Post.countDocuments({
+        type: "REEL",
+      });
+      const allPosts = await Post.find({
+        type: "REEL",
+      })
+        .skip((page - 1) * size)
+        .limit(size);
+
+      const finalData = {
+        content: allPosts,
+        pagination: {
+          page: Number(page),
+          size: Number(size),
+          totalItems,
+          totalPages: Math.ceil(totalItems / size),
+        },
+      };
+      return finalData;
     } catch (err) {
       throw new Error(`Error fetching reels : ${err.message}`);
     }
