@@ -7,6 +7,9 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    name: {
+      type: String,
+    },
     email: {
       type: String,
       required: true,
@@ -27,21 +30,36 @@ const userSchema = new Schema(
     gender: {
       type: String,
     },
-    posts: {
-      type: Array,
-    },
-    notifications: {
-      type: Array,
-    },
-    friends: {
-      type: Array,
-    },
-    followers: {
-      type: Array,
-    },
-    following: {
-      type: Array,
-    },
+    posts: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    notifications: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Notification",
+      },
+    ],
+    friends: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    followers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -10,7 +10,7 @@ const postsValidationSchema = joi.object({
   totalLikes: joi.number().integer(),
   totalShares: joi.number().integer(),
   comments: joi.array(),
-  creator: joi.any(),
+  creator: joi.any().required(),
 });
 
 module.exports = postsValidationSchema;

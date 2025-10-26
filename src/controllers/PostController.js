@@ -45,8 +45,9 @@ class PostController {
 
   async createPost(req, res, next) {
     const body = req.body;
+    const userId = req.userId;
     try {
-      await PostService.createPost(body);
+      await PostService.createPost(body, userId);
       res.status(STATUS_CODES.SUCCESS).json({
         message: "Success create post",
       });
@@ -58,9 +59,10 @@ class PostController {
 
   async updatePost(req, res, next) {
     const postId = req.params.postId;
+    const userId = req.userId;
     const body = req.body;
     try {
-      await PostService.updatePost(body, postId);
+      await PostService.updatePost(body, postId, userId);
       res.status(STATUS_CODES.SUCCESS).json({
         message: "Success update post",
       });
@@ -72,8 +74,9 @@ class PostController {
 
   async deletePost(req, res, next) {
     const postId = req.params.postId;
+    const userId = req.userId;
     try {
-      await PostService.deletePost(postId);
+      await PostService.deletePost(postId, userId);
       res.status(STATUS_CODES.SUCCESS).json({
         message: "Success delete post",
       });

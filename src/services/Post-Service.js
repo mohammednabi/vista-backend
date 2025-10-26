@@ -1,7 +1,8 @@
 const { privacyOptions } = require("../config/constants");
 const Post = require("../models/Post");
+const User = require("../models/User");
 const postsValidationSchema = require("../validation/postsValidationSchema");
-
+const mongodb = require("mongodb");
 class PostService {
   constructor() {}
 
@@ -70,24 +71,43 @@ class PostService {
     }
   }
 
-  async createPost(postData) {
+  async createPost(postData, userId) {
     try {
-      postData = await postsValidationSchema.validateAsync(postData);
+      let allData = await postsValidationSchema.validateAsync({
+        ...postData,
+        creator: userId,
+      });
 
-      const newProduct = new Post(postData);
-      return newProduct.save();
+      const newPost = new Post(allData);
+
+      const foundedUser = await User.findById(new mongodb.ObjectId(userId));
+
+      foundedUser.posts.push(newPost._id);
+
+      foundedUser.save();
+
+      console.log({ foundedUser });
+
+      return newPost.save();
     } catch (err) {
       throw new Error(`Error creating posts : ${err.message}`);
     }
   }
 
-  async updatePost(updatedData, postId) {
+  async updatePost(updatedData, postId, userId) {
     try {
-      updatedData = await postsValidationSchema.validateAsync(updatedData);
-
       const foundedPost = await Post.findById(postId);
 
-      const updatedKeys = Object.keys(updatedData);
+      if (String(foundedPost.creator) !== String(userId)) {
+        const error = new Error("You are not allowed");
+        error.statusCode = 403;
+        throw error;
+      }
+
+      let fullData = await postsValidationSchema.validateAsync({
+        ...updatedData,
+        creator: userId,
+      });
 
       const allowedkeys = [
         "content",
@@ -97,16 +117,24 @@ class PostService {
         "hidePostInfo",
       ];
 
+      Object.keys(fullData).forEach((key) => {
+        if (!allowedkeys.includes(key)) {
+          delete fullData[key];
+        }
+      });
+
+      const updatedKeys = Object.keys(fullData);
+
       updatedKeys.forEach((key) => {
         if (allowedkeys.includes(key)) {
           if (key === "privacy") {
-            if (privacyOptions.includes(updatedData[key])) {
-              foundedPost[key] = updatedData[key];
+            if (privacyOptions.includes(fullData[key])) {
+              foundedPost[key] = fullData[key];
             } else {
               throw new Error(`Can't update : ${key}`);
             }
           } else {
-            foundedPost[key] = updatedData[key];
+            foundedPost[key] = fullData[key];
           }
         } else {
           throw new Error(`Can't update : ${key}`);
@@ -119,8 +147,21 @@ class PostService {
     }
   }
 
-  async deletePost(postId) {
+  async deletePost(postId, userId) {
     try {
+      const foundedPost = await Post.findById(postId);
+
+      if (String(foundedPost.creator) !== String(userId)) {
+        const error = new Error("You are not allowed");
+        error.statusCode = 403;
+        throw error;
+      }
+
+      const foundedUser = await User.findById(userId);
+
+      foundedUser.posts.pull(postId);
+      foundedUser.save();
+
       return await Post.deleteOne({ _id: postId });
     } catch (err) {
       throw new Error(`Error deleting post : ${err.message}`);
